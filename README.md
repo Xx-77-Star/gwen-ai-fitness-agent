@@ -6,6 +6,12 @@
 
 > **Project positioning:** From a stateless chatbot to an observable, memory-aware, knowledge-grounded AI Agent.
 
+## Online Demo
+
+**Live application:** [Gwen AI Fitness Companion](https://gwen-ai-fitness-agent.onrender.com/)
+
+Explore the production-style experience with the Gwen Web UI, Agent Trace, Memory Center and About page.
+
 <!-- Logo / Banner placeholder -->
 
 
@@ -224,7 +230,7 @@ LLM Gateway、Memory Repository、Embedding Provider、Vector Store 和 Tool Reg
 ## 快速运行
 
 ```powershell
-cd "D:\AI agent2\fitlife-ai"
+cd gwen-ai-fitness-agent
 python -m venv .venv
 .venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
@@ -233,8 +239,8 @@ Copy-Item .env.example .env
 python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
-- Web UI：[http://127.0.0.1:8000/](http://127.0.0.1:8000/)
-- Swagger UI：[http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+- Live Demo: [https://gwen-ai-fitness-agent.onrender.com/](https://gwen-ai-fitness-agent.onrender.com/)
+- API Docs (local): [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
 
 运行测试：
 
@@ -310,5 +316,6 @@ fitlife-ai/
 ## License
 
 如需公开发布，请补充适合项目的 LICENSE 文件，并确认第三方组件许可证与资源授权。
+
 
 
