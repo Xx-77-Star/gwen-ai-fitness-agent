@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Avatar Lab · Gwen</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="./avatar-viewer.css">
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "./vendor/three/build/three.module.js",
+        "three/addons/": "./vendor/three/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <main class="lab">
+    <header class="page-header">
+      <div>
+        <p class="eyebrow">GWEN / DEVELOPMENT LAB</p>
+        <h1>Avatar Viewer <span>独立测试环境</span></h1>
+        <p class="intro">AI Companion · 自动取景、骨骼动画与实时模型诊断。</p>
+      </div>
+      <span class="badge">LOCAL GLB · THREE.JS</span>
+    </header>
+
+    <div class="workspace">
+      <section class="viewer-panel" aria-labelledby="stage-title">
+        <header class="panel-header">
+          <div><span class="signal" aria-hidden="true"></span><h2 id="stage-title">格温 / AI Companion</h2></div>
+          <span id="state-label" class="state-label">初始化中</span>
+        </header>
+        <div id="stage" class="stage">
+          <canvas id="avatar-canvas" tabindex="0" aria-label="格温 3D 模型。点击格温互动，拖动旋转，滚轮或双指缩放；方向键旋转，加减键缩放，R 重置，Enter 互动。"></canvas>
+          <div id="loading" class="loading" role="status" aria-live="polite">
+            <span class="loader" aria-hidden="true"></span>
+            <strong id="loading-title">正在准备 Avatar</strong>
+            <span id="loading-detail">加载本地 Three.js 与模型资源…</span>
+            <button id="retry" hidden>重新加载</button>
+          </div>
+          <div class="stage-caption" aria-hidden="true"><span>AI COMPANION STAGE</span><span>60–70% AUTO FRAME</span></div>
+        </div>
+        <div class="toolbar" aria-label="模型控制">
+          <button id="reset" disabled>重置视角</button>
+          <button id="rotate-left" disabled aria-label="向左旋转">左转</button>
+          <button id="rotate-right" disabled aria-label="向右旋转">右转</button>
+          <button id="zoom-in" disabled aria-label="放大模型">放大 ＋</button>
+          <button id="zoom-out" disabled aria-label="缩小模型">缩小 −</button>
+          <button id="pause" disabled aria-pressed="false">暂停动画</button>
+          <button id="bounds" disabled aria-pressed="false">包围盒</button>
+        </div>
+        <div class="animation-controls" aria-label="动画测试">
+          <span>动作测试</span>
+          <button id="action-idle" disabled>待机</button>
+          <button id="action-interact" disabled>互动一次</button>
+          <button id="action-busy" disabled aria-pressed="false">模拟计划生成 / 加载</button>
+          <button id="action-cast" disabled>预览 Cast_Cycle</button>
+        </div>
+        <p class="interaction-note">点击格温 / Enter 互动 · 拖动旋转 · 滚轮 / 双指缩放 · R 重置视角</p>
+      </section>
+
+      <aside class="debug-panel" aria-labelledby="debug-title">
+        <header class="panel-header"><h2 id="debug-title">模型诊断</h2><span class="badge small">LIVE</span></header>
+        <div class="debug-content">
+          <p class="debug-intro">原始坐标与归一化坐标分别展示。仅保留四个动作，每个动作独立采样取景；切换时平滑混合。</p>
+          <dl class="metrics">
+            <div><dt>Model size · 原始静态姿态</dt><dd id="model-size">—</dd></div>
+            <div><dt>Bounding box · 原始静态姿态</dt><dd id="model-bounds">—</dd></div>
+            <div><dt>Center · 原始静态姿态</dt><dd id="model-center">—</dd></div>
+            <div><dt>Active envelope · 当前动作包围盒</dt><dd id="animation-bounds">—</dd></div>
+            <div><dt>Frame center · 动画中心</dt><dd id="frame-center">—</dd></div>
+            <div><dt>Scale · 自动统一缩放</dt><dd id="model-scale">—</dd></div>
+            <div><dt>Camera position · 展示空间</dt><dd id="camera-position">—</dd></div>
+            <div><dt>Target · 展示空间</dt><dd id="camera-target">—</dd></div>
+            <div><dt>取景 / 距离 / 视口</dt><dd id="camera-fit">—</dd></div>
+            <div><dt>AnimationMixer</dt><dd id="animation-info">—</dd></div>
+            <div><dt>材质 / 光照</dt><dd id="material-info">—</dd></div>
+            <div><dt>渲染状态</dt><dd id="render-info">—</dd></div>
+          </dl>
+          <p class="debug-footnote">长度单位为 GLB 场景单位，未推断现实身高。手动放大可查看局部；重置恢复完整取景。</p>
+        </div>
+      </aside>
+    </div>
+    <footer>AVATAR LAB <span>本页面独立运行，未接入 FitLife 首页。</span></footer>
+  </main>
+  <script type="module">
+    const showError = (error) => {
+      document.querySelector("#loading").hidden = false;
+      document.querySelector(".loader").hidden = true;
+      document.querySelector("#loading-title").textContent = "Viewer 启动失败";
+      document.querySelector("#loading-detail").textContent = error.message;
+      document.querySelector("#state-label").textContent = "加载失败";
+      document.querySelector("#retry").hidden = false;
+    };
+    document.querySelector("#retry").addEventListener("click", () => location.reload());
+    if (location.protocol === "file:") {
+      showError(new Error("请通过 HTTP 打开：在项目目录运行 python -m http.server 8080 --directory frontend，然后访问 http://localhost:8080/avatar-test.html。"));
+    } else {
+      import("./avatar-viewer.js").then(({ startAvatarViewer }) => startAvatarViewer()).catch(showError);
+    }
+  </script>
+</body>
+</html>

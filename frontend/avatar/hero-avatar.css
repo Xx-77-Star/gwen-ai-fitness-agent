@@ -1,0 +1,127 @@
+/* Hero-specific layout; the independent lab keeps its existing stylesheet. */
+.hero {
+  min-height: 720px;
+  padding-block: 60px;
+}
+.companion-stage { height: 600px; }
+.model-host {
+  /* Keep the animated silhouette clear of the stage's labels and actions. */
+  inset: 26px 0 52px;
+}
+.fitlife-webgl-canvas {
+  touch-action: none;
+  cursor: pointer;
+}
+.fitlife-webgl-canvas:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -4px;
+}
+.model-host:not([data-avatar-ready="true"]) .fitlife-webgl-canvas { visibility: hidden; }
+.stage-topline, .floating-avatar-caption { pointer-events: none; }
+.avatar-fallback {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 16px;
+  padding: 28px;
+  text-align: center;
+}
+.avatar-fallback img {
+  width: min(62%, 240px);
+  height: auto;
+  border-radius: 28px;
+  object-fit: contain;
+}
+.avatar-fallback p {
+  max-width: 280px;
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.7;
+}
+.floating-avatar-caption small { max-width: 210px; }
+.floating-avatar-caption em {
+  color: var(--text-soft);
+  font-size: 9px;
+  font-style: normal;
+  letter-spacing: .04em;
+  opacity: .75;
+}
+@media (max-width: 780px) {
+  .hero { min-height: auto; padding-block: 58px 44px; }
+  .companion-stage { height: 400px; }
+  .model-host { inset: 36px 0 94px; }
+    .avatar-fallback { gap: 10px; padding: 18px; }
+  .avatar-fallback img { width: 130px; }
+}
+@media (max-width: 520px) {
+  .stage-topline { left: 16px; right: 16px; }
+  .floating-avatar-caption small { max-width: 164px; font-size: 9px; }
+  .stage-action { padding-inline: 12px; }
+}
+
+/* Gwen first-visit dialogue: a compact companion speech bubble, not a panel.
+   Deep black-purple, soft glow, tail pointing toward Gwen. */
+.greeting-bubble {
+  position: absolute;
+  z-index: 5;
+  top: 34px;
+  left: 16px;
+  width: 180px;
+  padding: 18px 16px 17px;
+  border: 1px solid rgba(145, 100, 255, .45);
+  border-radius: 20px;
+  background:
+    linear-gradient(145deg, rgba(139, 92, 246, .10), rgba(192, 132, 252, .04) 55%, transparent),
+    rgba(18, 14, 35, .94);
+  box-shadow: 0 16px 34px rgba(8, 4, 24, .42), 0 0 18px rgba(139, 92, 246, .10);
+  opacity: 0;
+  transform: translateY(-10px) scale(.85);
+  transform-origin: 100% 100%;
+  transition: opacity .28s ease, transform .32s cubic-bezier(.2, .8, .2, 1);
+  pointer-events: none;
+}
+.greeting-bubble[hidden] { display: none; }
+.greeting-bubble.is-visible { opacity: 1; transform: none; }
+.greeting-title {
+  margin: 0 0 8px;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+.greeting-body {
+  margin: 0;
+  color: #C9C2E6;
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+.greeting-tail {
+  position: absolute;
+  right: 22px;
+  bottom: -6px;
+  width: 13px;
+  height: 13px;
+  border-right: 1px solid rgba(145, 100, 255, .45);
+  border-bottom: 1px solid rgba(145, 100, 255, .45);
+  border-radius: 0 0 4px 0;
+  background: rgba(18, 14, 35, .94);
+  transform: rotate(45deg);
+}
+
+@media (max-width: 780px) {
+  .greeting-bubble {
+    top: 38px;
+    left: 10px;
+    width: min(62vw, 176px);
+    padding: 14px 13px 13px;
+    border-radius: 18px;
+  }
+  .greeting-title { margin-bottom: 6px; font-size: 16px; }
+  .greeting-body { font-size: 12.5px; line-height: 1.5; }
+  .greeting-tail { right: 18px; }
+}

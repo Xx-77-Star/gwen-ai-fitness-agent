@@ -1,0 +1,1 @@
+"""Offline RAG evaluation tests using Fake embeddings and vector stores."""

@@ -1,0 +1,10 @@
+{"id":"multi-001","question":"查看我最近训练情况，并结合天气给我今天训练建议","expected_tools":["get_training_summary","get_current_weather","get_training_recommendation"]}
+{"id":"multi-002","question":"先看这周训练记录，再根据下雨天气安排室内训练","expected_tools":["list_training_records","get_current_weather","get_training_recommendation"]}
+{"id":"multi-003","question":"分析我最近训练趋势，并结合气温推荐训练","expected_tools":["get_training_summary","get_current_weather","get_training_recommendation"]}
+{"id":"multi-004","question":"查看上次训练，了解天气后安排今天训练","expected_tools":["get_last_training_record","get_current_weather","get_training_recommendation"]}
+{"id":"multi-005","question":"列出最近训练明细，结合天气决定户外还是室内训练","expected_tools":["list_training_records","get_current_weather","get_training_recommendation"]}
+{"id":"multi-006","question":"查询最近训练总时长，再根据天气生成训练建议","expected_tools":["get_training_summary","get_current_weather","get_training_recommendation"]}
+{"id":"multi-007","question":"看看最近训练情况和当前天气，给出今天的训练建议","expected_tools":["get_training_summary","get_current_weather","get_training_recommendation"]}
+{"id":"multi-008","question":"查看这周训练记录并根据天气安排训练计划","expected_tools":["list_training_records","get_current_weather","get_training_recommendation"]}
+{"id":"multi-009","question":"了解上次训练和天气条件，再推荐今天练什么","expected_tools":["get_last_training_record","get_current_weather","get_training_recommendation"]}
+{"id":"multi-010","question":"分析最近训练趋势并结合天气推荐合适的训练方式","expected_tools":["get_training_summary","get_current_weather","get_training_recommendation"]}

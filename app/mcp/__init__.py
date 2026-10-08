@@ -1,0 +1,1 @@
+"""Reserved Phase 2 boundary for Model Context Protocol integration."""

@@ -1,0 +1,1 @@
+"""FitLife AI application package."""

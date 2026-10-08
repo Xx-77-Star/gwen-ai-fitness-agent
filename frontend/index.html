@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Gwen - 你的 AI Fitness Companion，陪你制定训练计划、记录训练状态，一起完成目标。">
+    <title>Gwen | AI Fitness Companion</title>
+    <link rel="icon" type="image/webp" href="/assets/ai-coach.webp">
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/avatar/hero-avatar.css">
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "/vendor/three/build/three.module.js",
+          "three/addons/": "/vendor/three/examples/jsm/"
+        }
+      }
+    </script>
+    <meta name="fitlife-frontend-compatibility" content="TRAIN WITH CLARITY SET YOUR FOCUS">
+  </head>
+  <body data-mode="user">
+    <main class="product-shell">
+      <header class="product-header">
+        <a class="brand-lockup" href="/" aria-label="Gwen 首页">
+          <img class="brand-mark" src="/assets/ai-coach.webp" alt="">
+          <span class="brand-copy"><strong>Gwen</strong><small>AI FITNESS COMPANION</small></span>
+        </a>
+        <nav class="mode-switcher" aria-label="产品模式">
+          <button class="mode-button is-active" type="button" data-mode="user">用户模式</button>
+          <button class="mode-button" type="button" data-mode="developer">开发者模式</button>
+        </nav>
+        <div class="header-actions">
+          <button class="trace-drawer-button" id="open-trace" type="button">Agent Trace</button>
+          <button class="icon-button" id="new-chat" type="button">新对话</button>
+          <button class="icon-button memory-entry" id="open-memory-center" type="button">🧠 Gwen 记忆管理</button>
+        </div>
+      </header>
+
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="hero-kicker">MEET GWEN<br>YOUR AI FITNESS COMPANION</p>
+          <h1 id="hero-title">你的专属<span>AI 教练，Gwen。</span></h1>
+          <p class="hero-description">Gwen 会记住你的目标与偏好，<br>理解你的当前状态，<br>并将可靠知识转化为清晰、可执行的训练建议。</p>
+          <div class="hero-actions">
+            <button class="primary-button" id="start-chat" type="button">开始与 Gwen 对话</button>
+            <a class="quiet-button about-link" href="/about.html">认识 Gwen</a>
+          </div>
+          <div class="hero-proof" aria-label="Gwen 能力概览">
+            <span>MEMORY</span><span>KNOWLEDGE</span><span>ACTION</span>
+          </div>
+        </div>
+
+        <section class="companion-stage floating-avatar" aria-label="Gwen AI Companion Stage">
+          <div class="stage-light" aria-hidden="true"></div>
+          <div class="stage-topline"><span>PERSONAL AI COMPANION</span><span class="live-state"><i></i>LIVE</span></div>
+          <div class="greeting-bubble" data-greeting-bubble role="status" aria-live="polite" hidden>
+            <p class="greeting-title">你好，我是 Gwen <span aria-hidden="true">✨</span></p>
+            <p class="greeting-body">准备好开始<br>今天的训练了吗？</p>
+            <span class="greeting-tail" aria-hidden="true"></span>
+          </div>
+          <div class="model-host" id="avatar-stage-slot" data-avatar-ready="false" aria-label="Gwen AI Companion" aria-busy="true">
+            <div class="avatar-fallback" data-avatar-fallback>
+              <img src="/assets/ai-coach.webp" width="240" height="240" alt="Gwen">
+              <p data-avatar-message role="status">Gwen 正在准备中，你可以先开始对话。</p>
+              <button class="quiet-button" type="button" data-avatar-retry hidden>重新加载 Gwen</button>
+            </div>
+          </div>
+          <button class="stage-action" id="ask-gwen" type="button">Ask Gwen <span aria-hidden="true">→</span></button>
+          <div class="floating-avatar-caption">
+            <span>GWEN</span>
+            <small>AI Fitness Companion</small>
+            <em data-avatar-hint>Gwen 在这里陪伴你。</em>
+          </div>
+        </section>
+      </section>
+
+      <section class="capability-section" aria-labelledby="capability-title">
+        <div class="section-heading">
+          <div><p class="section-label">WITH GWEN</p><h2 id="capability-title">一个会理解、记住并行动的 Gwen。</h2></div>
+          <p>把复杂的智能能力，变成自然的个人训练协作。</p>
+        </div>
+        <div class="capability-grid">
+          <article class="capability-item"><span class="capability-index">01</span><div><h3>Remember You</h3><p>记住你的目标、偏好和训练习惯，让每次建议更贴近你。</p></div></article>
+          <article class="capability-item"><span class="capability-index">02</span><div><h3>Know Your Context</h3><p>把你的当前状态、可靠知识和历史记录放进同一次建议里。</p></div></article>
+          <article class="capability-item"><span class="capability-index">03</span><div><h3>Use The Right Action</h3><p>在需要时读取训练记录、天气与推荐能力，给出具体下一步，并可根据训练目标提供基础饮食建议。</p></div></article>
+          <article class="capability-item"><span class="capability-index">04</span><div><h3>Explain When Needed</h3><p>普通用户看到自然回答，开发者模式可以查看完整执行过程。</p></div></article>
+        </div>
+      </section>
+
+      <section class="conversation-section" id="conversation" aria-labelledby="conversation-title">
+        <div class="section-heading">
+          <div><p class="section-label">TRAIN WITH GWEN</p><h2 id="conversation-title">和 Gwen 开始一次真正的对话。</h2></div>
+          <span class="connection-state" id="connection-state" aria-live="polite">Gwen 在线</span>
+        </div>
+        <div class="conversation-shell">
+          <aside class="coach-sidebar">
+            <div class="coach-identity">
+              <img class="coach-sidebar-avatar" src="/assets/ai-coach.webp" alt="Gwen">
+              <div><strong>Gwen</strong><span>AI Fitness Companion</span></div>
+            </div>
+            <p>告诉我你今天的状态、目标或正在权衡的问题。我会先理解你，再给出可执行的下一步。</p>
+            <div class="quick-prompts">
+              <span>START WITH A FOCUS</span>
+              <button class="goal-card" type="button" data-goal="增肌塑形"><strong>增肌塑形</strong><small>力量与恢复</small></button>
+              <button class="goal-card" type="button" data-goal="减脂燃脂"><strong>减脂燃脂</strong><small>能量管理</small></button>
+              <button class="goal-card" type="button" data-goal="提升体能"><strong>提升体能</strong><small>耐力与表现</small></button>
+              <button class="goal-card" type="button" data-goal="恢复放松"><strong>恢复放松</strong><small>睡眠与调节</small></button>
+            </div>
+          </aside>
+          <div class="chat-panel">
+            <div class="message-list" id="message-list" aria-live="polite">
+              <div class="empty-state" id="chat-empty">
+                <img class="empty-glyph" src="/assets/ai-coach.webp" alt="">
+                <strong>从一个真实问题开始</strong>
+                <span>Gwen 会结合你的目标、记忆与知识，给出清晰、可执行的建议。</span>
+                <button type="button" class="empty-action" data-prompt="帮我制定今天的训练计划">制定今天计划</button>
+              </div>
+            </div>
+            <div class="agent-status" id="agent-status" role="status" aria-live="polite" hidden>
+              <div class="agent-status-head">
+                <strong>Gwen 正在准备你的训练建议...</strong>
+              </div>
+              <ul class="agent-status-steps" id="agent-status-steps"></ul>
+            </div>
+            <div class="loading-state" id="loading-state" hidden>
+              <img class="loading-avatar" src="/assets/ai-coach.webp" alt="">
+              <div><strong>Gwen 正在理解你的问题</strong><span>正在整理上下文并准备下一步建议…</span><div class="loading-lines" aria-hidden="true"><i></i><i></i><i></i></div></div>
+            </div>
+            <form class="composer" id="chat-form">
+              <label class="sr-only" for="message-input">输入消息</label>
+              <textarea id="message-input" name="message" rows="2" maxlength="4000" placeholder="和 Gwen 聊聊你的训练计划…" required></textarea>
+              <button class="primary-button" id="send-button" type="submit">发送</button>
+            </form>
+          </div>
+        </div>
+      </section>
+        <div class="chat-companion" aria-label="Gwen Chat Companion">
+          <div class="chat-avatar" id="chat-avatar" data-avatar-ready="false" data-avatar-busy="false" aria-label="Gwen 3D Companion" aria-busy="false">
+            <img class="chat-avatar-poster" src="/assets/ai-coach.webp" alt="" data-avatar-fallback>
+          </div>
+          <div class="chat-companion-copy">
+            <strong>Gwen</strong>
+            <span id="chat-avatar-status">随时待命，帮你把想法变成今天的训练。</span>
+            <button class="chat-companion-link" id="view-memory" type="button">查看 Gwen 记忆</button>
+          </div>
+        </div>
+    </main>
+
+    <div class="memory-backdrop" id="memory-backdrop" hidden>
+      <section class="memory-modal" role="dialog" aria-modal="true" aria-labelledby="memory-modal-title">
+        <header class="memory-modal-head">
+          <div>
+            <p class="section-label">GWEN MEMORY CENTER</p>
+            <h2 id="memory-modal-title">Gwen 记忆管理</h2>
+          </div>
+          <button class="icon-button" id="close-memory-center" type="button" aria-label="关闭 Gwen 记忆管理">关闭</button>
+        </header>
+        <p class="memory-modal-intro">Gwen 会根据这些信息为你提供个性化训练建议，你可以随时查看、修改或重新开始。</p>
+        <h3 class="memory-section-title">Gwen 记住了关于你的：</h3>
+        <div class="memory-summary" id="memory-summary">
+          <strong data-memory-count>Gwen 记住了关于你的 0 条长期记忆</strong>
+          <span data-memory-updated>最近更新：暂无记录</span>
+        </div>
+        <div class="memory-list" id="memory-list" aria-live="polite">
+          <p class="empty-copy">正在读取 Gwen 的记忆…</p>
+        </div>
+        <footer class="memory-modal-foot">
+          <p class="memory-note">重新开始后，Gwen 会忘记所有长期记忆，从头了解你。</p>
+          <button class="quiet-button memory-reset" id="reset-memory" type="button">重新开始体验</button>
+        </footer>
+      </section>
+    </div>
+
+    <div class="memory-confirm-backdrop" id="memory-confirm-backdrop" hidden>
+      <section class="memory-confirm" role="alertdialog" aria-modal="true" aria-labelledby="memory-confirm-title" aria-describedby="memory-confirm-desc">
+        <h3 id="memory-confirm-title">清除 Gwen 记忆</h3>
+        <p id="memory-confirm-desc">确定让 Gwen 忘记你的训练档案吗？</p>
+        <ul class="memory-confirm-list">
+          <li>训练目标会恢复为空</li>
+          <li>Gwen 不会再根据过去习惯推荐训练计划</li>
+          <li>你可以重新建立属于自己的训练档案</li>
+        </ul>
+        <div class="memory-confirm-actions">
+          <button class="quiet-button" id="cancel-memory-reset" type="button">取消</button>
+          <button class="quiet-button memory-reset" id="confirm-memory-reset" type="button">确认清除</button>
+        </div>
+      </section>
+    </div>
+
+    <aside class="trace-drawer" id="trace-drawer" aria-labelledby="trace-title" aria-hidden="true">
+      <div class="drawer-head"><div><p class="section-label">DEVELOPER MODE</p><h2 id="trace-title">Agent Trace</h2></div><button class="icon-button" id="close-trace" type="button" aria-label="关闭 Gwen 执行过程">关闭</button></div>
+      <div class="trace-content" id="trace-content">
+        <section class="trace-section" aria-labelledby="run-summary-title"><div class="trace-section-heading"><p class="section-label">RUN SUMMARY</p><h3 id="run-summary-title">运行摘要</h3></div><div id="run-summary" class="run-summary"><p class="empty-copy">发送消息后显示 Agent 执行过程。</p></div></section>
+        <section class="trace-section" aria-labelledby="timeline-title"><div class="trace-section-heading"><p class="section-label">EXECUTION TIMELINE</p><h3 id="timeline-title">执行时间线</h3></div><div id="execution-timeline" class="timeline"><p class="empty-copy">暂无执行节点。</p></div></section>
+        <section class="trace-section" aria-labelledby="evidence-title"><div class="trace-section-heading"><p class="section-label">EVIDENCE</p><h3 id="evidence-title">上下文证据</h3></div><div id="trace-evidence" class="evidence-stack"><p class="empty-copy">暂无证据内容。</p></div></section>
+      </div>
+    </aside>
+    <div class="drawer-backdrop" id="drawer-backdrop" hidden></div>
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>
+
+

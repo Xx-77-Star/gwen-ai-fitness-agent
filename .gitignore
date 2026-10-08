@@ -1,0 +1,53 @@
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Databases and local runtime state
+*.db
+*.sqlite
+*.sqlite3
+data/
+db/
+
+# Logs
+logs/
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.venv/
+venv/
+build/
+dist/
+*.pyd
+
+# Generated caches, coverage and evaluation outputs
+tests/evals/results/
+
+# Generated caches / coverage
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+.tox/
+.nox/
+
+# IDE and editor settings
+.idea/
+.vscode/
+*.code-workspace
+
+# OS metadata
+.DS_Store
+Thumbs.db
+
+# Keep the vendored Three.js browser runtime used by the static frontend
+!frontend/vendor/three/build/
+!frontend/vendor/three/examples/
+
