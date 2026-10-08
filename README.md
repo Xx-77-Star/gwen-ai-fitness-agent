@@ -39,9 +39,6 @@ Gwen 把一次性的健身问答，升级成一个**理解上下文、保留长�
 | --- | --- |
 | ![Memory Center](docs/images/memory-center.png) | ![About Gwen](docs/images/about-gwen.png) |
 
-### Mobile Demo
-
-![Gwen Mobile Web UI](docs/images/demo-mobile.png)
 
 > 以上截图展示 Gwen Web UI、Agent Trace、Memory Center 和 About 页面的项目体验。
 
@@ -313,9 +310,5 @@ fitlife-ai/
 ## License
 
 如需公开发布，请补充适合项目的 LICENSE 文件，并确认第三方组件许可证与资源授权。
-
-
-
-
 
 
