@@ -108,3 +108,14 @@ def test_user_profile_persists_across_sessions(session_factory: sessionmaker[Ses
     assert profile is not None
     assert profile.nickname == "Alex"
     assert profile.weight == 75.5
+
+@pytest.mark.asyncio
+async def test_city_can_be_saved_for_web_user_without_full_profile(client: AsyncClient) -> None:
+    response = await client.patch("/profile/web-user/city", json={"city": "广州"})
+
+    assert response.status_code == 200
+    assert response.json()["city"] == "广州"
+
+    fetched = await client.get("/profile/web-user")
+    assert fetched.status_code == 200
+    assert fetched.json()["city"] == "广州"

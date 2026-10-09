@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from collections.abc import Mapping, Sequence
 from typing import Any, Literal
 
@@ -11,6 +12,7 @@ StableMemoryKey = Literal[
     "fitness_goal",
     "training_preference",
     "experience_level",
+    "weather_location",
 ]
 
 
@@ -58,6 +60,13 @@ class RuleBasedMemoryExtractor:
             seen.add("training_preference")
 
         experience_level = _extract_experience_level(user_text)
+        weather_location = _extract_weather_location(user_text)
+        if weather_location is not None:
+            memories.append(
+                ExtractedMemory(key="weather_location", value=weather_location)
+            )
+            seen.add("weather_location")
+
         if experience_level is not None and experience_level not in seen:
             memories.append(ExtractedMemory(key="experience_level", value=experience_level))
 
@@ -95,6 +104,24 @@ def _extract_training_preference(text: str) -> str | None:
     normalized = text.replace(" ", "")
     if "不喜欢跑步" in normalized and "更喜欢力量训练" in normalized:
         return "不喜欢跑步，更喜欢力量训练"
+    return None
+
+
+def _extract_weather_location(text: str) -> str | None:
+    normalized = text.replace(" ", "")
+    for marker in ("我的所在地是", "所在地是", "我的城市是", "我住在", "我在"):
+        start = normalized.find(marker)
+        if start < 0:
+            continue
+        value = normalized[start + len(marker) :]
+        value = re.split(
+            r"[，。！？,.;；\t\n]|今天|明天|昨天|适合|天气|跑步|训练",
+            value,
+            maxsplit=1,
+        )[0]
+        value = value.strip("，。！？,.;；\t\n")
+        if value:
+            return value[:100]
     return None
 
 

@@ -24,6 +24,10 @@ def test_recommendation_schema_and_registry_are_registered() -> None:
         "user_goal",
         "recent_training",
         "weather_condition",
+        "workout_history",
+        "current_date",
+        "today_records",
+        "yesterday_records",
     }
 
 
@@ -102,3 +106,18 @@ def test_recommendation_handler_is_available_for_tool_selection() -> None:
 
     assert result["recommendation_type"] == "mobility"
     assert result["intensity"] == "low"
+
+
+
+def test_same_day_training_is_not_called_yesterday() -> None:
+    recommendation = build_recommendation(
+        user_goal="增肌",
+        recent_training=["胸", "卧推"],
+        weather_condition="sunny",
+        current_date="2026-10-09",
+        today_records=[{"date": "2026-10-09", "muscle_group": "胸"}],
+        yesterday_records=[],
+    )
+
+    assert "今天已经练过胸" in recommendation.recommendation_reason
+    assert "昨天训练记录" not in recommendation.recommendation_reason

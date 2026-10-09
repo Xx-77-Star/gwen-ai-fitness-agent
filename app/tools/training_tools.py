@@ -86,7 +86,7 @@ def get_training_summary(
 
 
 def build_training_tool_registry() -> ToolRegistry:
-    """Create a registry containing only the supported read-only training tools."""
+    """Create a registry containing the supported read-only training tools."""
     registry = ToolRegistry()
     registry.register(
         ToolDefinition(

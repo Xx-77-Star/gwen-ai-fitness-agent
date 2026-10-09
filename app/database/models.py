@@ -53,6 +53,7 @@ class UserProfile(Base):
     training_frequency: Mapped[int] = mapped_column(Integer, nullable=False)
     diet_preference: Mapped[str] = mapped_column(String(200), nullable=False)
     lifestyle: Mapped[str] = mapped_column(Text, nullable=False)
+    city: Mapped[str] = mapped_column(String(100), nullable=False, default="")
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=utc_now,
@@ -171,3 +172,38 @@ class TrainingRecord(Base):
 
     def __repr__(self) -> str:
         return f"<TrainingRecord id={self.id} user_id={self.user_id!r}>"
+
+
+class WorkoutRecord(Base):
+    """One user-submitted workout check-in used by the web training journal."""
+
+    __tablename__ = "workout_records"
+    __table_args__ = (
+        CheckConstraint("weight >= 0", name="ck_workout_records_weight"),
+        CheckConstraint("sets >= 1", name="ck_workout_records_sets"),
+        CheckConstraint("reps >= 1", name="ck_workout_records_reps"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[str] = mapped_column(
+        String(64),
+        ForeignKey("user_profiles.user_id", ondelete="CASCADE"),
+        index=True,
+        nullable=False,
+    )
+    date: Mapped[date] = mapped_column(Date, index=True, nullable=False)
+    muscle_group: Mapped[str] = mapped_column(String(20), nullable=False)
+    exercise: Mapped[str] = mapped_column(String(100), nullable=False)
+    weight: Mapped[float] = mapped_column(Float, nullable=False)
+    sets: Mapped[int] = mapped_column(Integer, nullable=False)
+    reps: Mapped[int] = mapped_column(Integer, nullable=False)
+    feeling: Mapped[str] = mapped_column(String(100), nullable=False)
+    note: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=utc_now,
+        nullable=False,
+    )
+
+    def __repr__(self) -> str:
+        return f"<WorkoutRecord id={self.id} user_id={self.user_id!r}>"

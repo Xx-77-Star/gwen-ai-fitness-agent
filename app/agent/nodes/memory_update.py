@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Mapping
+from contextlib import suppress
 from typing import Any
 
 from app.agent.state import AgentState
@@ -11,7 +12,12 @@ from app.memory.extractor import MemoryExtractionResult, RuleBasedMemoryExtracto
 from app.memory.interface import MemoryServiceInterface
 
 _LOGGER = logging.getLogger("fitlife.memory.update")
-_ALLOWED_KEYS = {"fitness_goal", "training_preference", "experience_level"}
+_ALLOWED_KEYS = {
+    "fitness_goal",
+    "training_preference",
+    "experience_level",
+    "weather_location",
+}
 
 
 def memory_update_node(
@@ -45,6 +51,9 @@ def memory_update_node(
             for memory in validated:
                 memory_service.remember(user_id, memory["key"], memory["value"])
                 written_keys.append(memory["key"])
+                if memory["key"] == "weather_location":
+                    with suppress(Exception):
+                        memory_service.remember(user_id, "city", memory["value"])
             update_metadata["memory_update"].update(
                 {"written_keys": written_keys, "status": "success"}
             )

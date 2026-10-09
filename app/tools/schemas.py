@@ -38,6 +38,6 @@ class ToolDefinition(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     name: str = Field(min_length=1, max_length=100, pattern=r"^[a-z][a-z0-9_]*$")
-    description: str = Field(min_length=1, max_length=500)
+    description: str = Field(min_length=1, max_length=1000)
     input_model: type[BaseModel]
     handler: ToolHandler

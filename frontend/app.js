@@ -376,6 +376,147 @@ document.addEventListener("keydown", event => {
   if (confirmBackdrop && !confirmBackdrop.hidden) { closeResetConfirm(); return; }
   if (memoryBackdrop && !memoryBackdrop.hidden) closeMemoryCenter();
 });
+// ---- Workout check-in journal (persisted through /workouts) ----
+const workoutBackdrop = document.querySelector("#workout-backdrop");
+const workoutForm = document.querySelector("#workout-form");
+const workoutDate = document.querySelector("#workout-date");
+const workoutStatus = document.querySelector("#workout-status");
+const workoutHistoryList = document.querySelector("#workout-history-list");
+const workoutHistoryCount = document.querySelector("#workout-history-count");
+const openWorkoutButton = document.querySelector("#open-workout-checkin");
+const closeWorkoutButton = document.querySelector("#close-workout-checkin");
+const cityInput = document.querySelector("#user-city");
+const citySaveButton = document.querySelector("#save-user-city");
+const cityStatus = document.querySelector("#city-status");
+async function loadUserCity() {
+  if (!cityInput) return;
+  try {
+    const response = await fetch(`/profile/${encodeURIComponent(userId || localStorage.getItem("fitlife-user-id") || "")}`);
+    const payload = await parseJsonResponse(response);
+    if (response.ok) {
+      cityInput.value = payload.city || "";
+      if (payload.city && cityStatus) {
+        cityStatus.className = "city-status ok";
+        cityStatus.textContent = "已记住所在地";
+      }
+    }
+  } catch { /* profile may not exist yet */ }
+}
+citySaveButton?.addEventListener("click", async () => {
+  if (!cityInput || !cityStatus) return;
+  const city = cityInput.value.trim();
+  if (!city) { cityStatus.className = "city-status bad"; cityStatus.textContent = "请填写城市"; return; }
+  citySaveButton.disabled = true;
+  try {
+    const response = await fetch(`/profile/${encodeURIComponent(userId)}/city`, {
+      method: "PATCH", headers: {"Content-Type": "application/json"}, body: JSON.stringify({city}),
+    });
+    const body = await parseJsonResponse(response);
+    if (!response.ok) throw new Error(body.detail || "城市保存失败");
+    cityStatus.className = "city-status ok"; cityStatus.textContent = "城市已保存，Gwen 会长期记住";
+  } catch (error) {
+    cityStatus.className = "city-status bad"; cityStatus.textContent = error instanceof Error ? error.message : "城市保存失败";
+  } finally { citySaveButton.disabled = false; }
+});
+const workoutMUSCLE_GROUPS = ["胸", "背", "腿", "肩", "手臂", "核心"];
+let workoutOpener = null;
+
+function formatWorkoutDate(value) {
+  const date = value ? new Date(value + "T00:00:00") : null;
+  if (!date || Number.isNaN(date.getTime())) return "暂无记录";
+  return `${date.getFullYear()}年${String(date.getMonth() + 1).padStart(2, "0")}月${String(date.getDate()).padStart(2, "0")}日`;
+}
+function todayLocalDate() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+}
+function renderWorkoutHistory(records) {
+  if (!workoutHistoryList) return;
+  if (!records.length) {
+    workoutHistoryList.replaceChildren(memoryNode("p", "empty-copy", "还没有训练打卡记录。"));
+    if (workoutHistoryCount) workoutHistoryCount.textContent = "暂无记录";
+    return;
+  }
+  if (workoutHistoryCount) workoutHistoryCount.textContent = `${records.length} 条记录`;
+  const fragment = document.createDocumentFragment();
+  records.forEach((record) => {
+    const item = memoryNode("article", "workout-history-item");
+    const head = memoryNode("div", "workout-history-head");
+    head.append(
+      memoryNode("strong", "", `${formatWorkoutDate(record.date)} · ${record.muscle_group}`),
+      memoryNode("span", "workout-history-exercise", record.exercise),
+    );
+    item.append(
+      head,
+      memoryNode("p", "workout-history-meta", `${record.weight}kg · ${record.sets} 组 × ${record.reps} 次 · ${record.feeling}`),
+    );
+    if (record.note) item.append(memoryNode("p", "workout-history-note", record.note));
+    fragment.append(item);
+  });
+  workoutHistoryList.replaceChildren(fragment);
+}
+async function loadWorkoutHistory() {
+  if (!workoutHistoryList) return;
+  workoutHistoryList.replaceChildren(memoryNode("p", "empty-copy", "正在读取训练记录…"));
+  try {
+    const response = await fetch(`/workouts/${encodeURIComponent(userId)}?limit=20`);
+    const payload = await parseJsonResponse(response);
+    if (!response.ok) throw new Error(payload.detail || "训练记录读取失败");
+    renderWorkoutHistory(Array.isArray(payload) ? payload : []);
+  } catch (error) {
+    workoutHistoryList.replaceChildren(memoryNode("div", "workout-history-item", error instanceof Error ? error.message : "训练记录读取失败"));
+  }
+}
+function openWorkoutCheckin(opener) {
+  if (!workoutBackdrop) return;
+  if (opener) workoutOpener = opener;
+  if (workoutDate && !workoutDate.value) workoutDate.value = todayLocalDate();
+  workoutBackdrop.hidden = false;
+  document.querySelector("#workout-exercise")?.focus();
+  loadWorkoutHistory();
+}
+function closeWorkoutCheckin() {
+  if (workoutBackdrop) workoutBackdrop.hidden = true;
+  (workoutOpener || openWorkoutButton)?.focus({preventScroll: true});
+}
+openWorkoutButton?.addEventListener("click", () => openWorkoutCheckin(openWorkoutButton));
+closeWorkoutButton?.addEventListener("click", closeWorkoutCheckin);
+workoutBackdrop?.addEventListener("click", (event) => { if (event.target === workoutBackdrop) closeWorkoutCheckin(); });
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && workoutBackdrop && !workoutBackdrop.hidden) closeWorkoutCheckin();
+});
+workoutForm?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const saveButton = document.querySelector("#save-workout");
+  const payload = {
+    user_id: userId,
+    date: workoutDate?.value || todayLocalDate(),
+    muscle_group: document.querySelector("#workout-muscle-group")?.value || "",
+    exercise: document.querySelector("#workout-exercise")?.value.trim() || "",
+    weight: Number(document.querySelector("#workout-weight")?.value || 0),
+    sets: Number(document.querySelector("#workout-sets")?.value || 0),
+    reps: Number(document.querySelector("#workout-reps")?.value || 0),
+    feeling: document.querySelector("#workout-feeling")?.value.trim() || "",
+    note: document.querySelector("#workout-note")?.value.trim() || "",
+  };
+  if (workoutStatus) { workoutStatus.className = "workout-status"; workoutStatus.textContent = "正在保存…"; }
+  if (saveButton) saveButton.disabled = true;
+  try {
+    const response = await fetch("/workouts", {
+      method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(payload),
+    });
+    const body = await parseJsonResponse(response);
+    if (!response.ok) throw new Error(body.detail || "训练打卡保存失败");
+    if (workoutStatus) { workoutStatus.className = "workout-status ok"; workoutStatus.textContent = "已保存，Gwen 会参考这条训练记录。"; }
+    workoutForm.reset();
+    if (workoutDate) workoutDate.value = todayLocalDate();
+    await loadWorkoutHistory();
+  } catch (error) {
+    if (workoutStatus) { workoutStatus.className = "workout-status bad"; workoutStatus.textContent = error instanceof Error ? error.message : "训练打卡保存失败"; }
+  } finally {
+    if (saveButton) saveButton.disabled = false;
+  }
+});
 const NODE_DISPLAY = {
   load_profile: ["读取用户画像", "profile"], memory_retrieve: ["读取记忆", "memory"],
   rag_retrieve: ["检索知识库", "retrieval"], intent: ["识别用户意图", "reasoning"],
@@ -395,6 +536,7 @@ const newChatButton = document.querySelector("#new-chat");
 let conversationId = sessionStorage.getItem("fitlife-conversation-id");
 let userId = localStorage.getItem("fitlife-user-id");
 if (!userId) { userId = `web-${crypto.randomUUID()}`; localStorage.setItem("fitlife-user-id", userId); }
+loadUserCity();
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -685,4 +827,5 @@ document.querySelectorAll(".empty-action").forEach((button) => {
     form.requestSubmit();
   });
 });
+
 

@@ -93,3 +93,43 @@ a.primary-button,a.quiet-button,a.mode-button{display:inline-flex;align-items:ce
 .memory-summary span{color:var(--text-muted);font-family:"Cascadia Code",Consolas,monospace;font-size:11px;letter-spacing:.03em}
 .memory-card-updated{margin:0;color:var(--text-soft);font-family:"Cascadia Code",Consolas,monospace;font-size:10px;letter-spacing:.04em}
 @media(max-width:520px){.memory-summary{padding:12px 13px}.memory-summary strong{font-size:12.5px}}
+
+/* Workout check-in journal */
+.workout-entry { white-space: nowrap; }
+.workout-backdrop{position:fixed;z-index:40;inset:0;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(4,3,12,.72);backdrop-filter:blur(3px)}
+.workout-backdrop[hidden]{display:none!important}
+.workout-modal{width:min(760px,100%);max-height:min(90vh,900px);overflow:auto;padding:24px;border:1px solid var(--border-strong);border-radius:22px;background:linear-gradient(150deg,#15102A,#0D0D1A 55%);box-shadow:0 32px 90px rgba(0,0,0,.5)}
+.workout-modal-head{display:flex;align-items:start;justify-content:space-between;gap:16px}
+.workout-modal-head h2{margin:0;font-size:24px;letter-spacing:-.02em}
+.workout-modal-head .section-label{margin-bottom:6px}
+.workout-modal-intro{margin:12px 0 20px;color:var(--text-muted);font-size:13px;line-height:1.7}
+.workout-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.workout-form label{display:grid;gap:6px;color:var(--text-muted);font-size:11px;font-weight:700}
+.workout-form input,.workout-form select,.workout-form textarea{width:100%;min-height:40px;padding:9px 11px;border:1px solid var(--border);border-radius:10px;background:#0B0B17;color:var(--text);font-size:13px}
+.workout-form textarea{min-height:82px;resize:vertical}
+.workout-form input:focus,.workout-form select:focus,.workout-form textarea:focus{outline:2px solid var(--accent);outline-offset:1px}
+.workout-note{grid-column:1/-1}
+.workout-actions{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.workout-status{min-height:18px;margin:0;color:var(--text-soft);font-size:11px}
+.workout-status.ok{color:#C4B5FD}.workout-status.bad{color:#FCA5A5}
+.workout-history{margin-top:22px;padding-top:18px;border-top:1px solid var(--border)}
+.workout-history-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:11px}
+.workout-history-head h3{margin:0;font-size:14px}
+.workout-history-head span{color:var(--text-muted);font-family:"Cascadia Code",Consolas,monospace;font-size:10px}
+.workout-history-list{display:grid;gap:9px}
+.workout-history-item{display:grid;gap:6px;padding:11px 13px;border:1px solid var(--border);border-radius:11px;background:var(--surface)}
+.workout-history-head strong{color:#EDE9FE;font-size:12px}
+.workout-history-exercise{color:#C4B5FD;font-family:"Cascadia Code",Consolas,monospace;font-size:10px}
+.workout-history-meta{margin:0;color:var(--text-muted);font-family:"Cascadia Code",Consolas,monospace;font-size:11px}
+.workout-history-note{margin:0;color:var(--text-soft);font-size:11px;line-height:1.5}
+@media(max-width:520px){.workout-modal{padding:18px}.workout-form{grid-template-columns:1fr}.workout-note{grid-column:auto}.workout-actions{align-items:stretch;flex-direction:column}.workout-actions .primary-button{width:100%}}
+
+
+/* User city for weather-aware training recommendations */
+.city-setting{display:grid;gap:7px;padding:11px 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface)}
+.city-setting label{color:#C4B5FD;font-family:"Cascadia Code",Consolas,monospace;font-size:10px;font-weight:800;letter-spacing:.1em}
+.city-setting>div{display:flex;gap:7px}
+.city-setting input{min-width:0;flex:1;min-height:38px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:#0B0B17;color:var(--text);font-size:12px}
+.city-status{min-height:15px;margin:0;color:var(--text-soft);font-size:10px}
+.city-status.ok{color:#C4B5FD}.city-status.bad{color:#FCA5A5}
+@media(max-width:520px){.city-setting>div{flex-direction:column}.city-setting button{width:100%}}

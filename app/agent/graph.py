@@ -16,11 +16,9 @@ from app.agent.state import AgentState
 from app.config.settings import get_settings
 from app.database.session import get_session_factory
 from app.database.training_repository import SQLTrainingRecordRepository
+from app.database.workout_repository import SQLWorkoutCheckInRepository
 from app.llm.client import LLMClient, OpenAICompatibleLLMClient
-from app.memory.conversation_repository import (
-    ConversationRepository,
-    SQLConversationRepository,
-)
+from app.memory.conversation_repository import ConversationRepository, SQLConversationRepository
 from app.memory.interface import MemoryServiceInterface
 from app.memory.profile_repository import ProfileRepository, SQLProfileRepository
 from app.memory.repository import SQLUserMemoryRepository
@@ -28,10 +26,13 @@ from app.memory.service import MemoryService
 from app.rag.retriever import KnowledgeRetriever
 from app.rag.service import KnowledgeRetrievalService
 from app.tools.executor import ToolExecutor
+from app.tools.geocoding_tools import OpenMeteoGeocodingClient, register_geocoding_tool
 from app.tools.recommendation_tools import register_recommendation_tool
 from app.tools.registry import ToolRegistry
+from app.tools.time_tools import register_time_tool
 from app.tools.training_tools import build_training_tool_registry
 from app.tools.weather_tools import OpenMeteoWeatherClient, register_weather_tool
+from app.tools.workout_tools import register_workout_tools
 
 MAX_TOOL_ROUNDS = 2
 MAX_TOTAL_TOOL_CALLS = 4
@@ -47,6 +48,9 @@ def create_agent_graph(
     memory_service: MemoryServiceInterface | None = None,
     conversation_repository: ConversationRepository | None = None,
     weather_client: object | None = None,
+    geocoding_client: object | None = None,
+    time_provider: object | None = None,
+    workout_repository: object | None = None,
     max_tool_calls: int = MAX_TOTAL_TOOL_CALLS,
     max_tool_rounds: int = MAX_TOOL_ROUNDS,
     conversation_window: int = DEFAULT_CONVERSATION_WINDOW,
@@ -56,6 +60,7 @@ def create_agent_graph(
     workflow = StateGraph(AgentState)
     registry = tool_registry or _build_default_tool_registry()
     weather_client = weather_client or OpenMeteoWeatherClient()
+    geocoding_client = geocoding_client or OpenMeteoGeocodingClient()
     tool_executor = ToolExecutor(registry)
     memory = memory_service or MemoryService(_NullMemoryRepository())
 
@@ -77,8 +82,7 @@ def create_agent_graph(
         "rag_retrieve",
         partial(
             rag_retrieve_node,
-            knowledge_service=knowledge_service
-            or KnowledgeRetrievalService(
+            knowledge_service=knowledge_service or KnowledgeRetrievalService(
                 KnowledgeRetriever(_NullEmbeddingProvider(), _EmptyVectorStore())
             ),
         ),
@@ -95,14 +99,14 @@ def create_agent_graph(
             tool_registry=tool_registry or registry,
             repository=training_repository,
             weather_client=weather_client,
+            geocoding_client=geocoding_client,
+            time_provider=time_provider,
+            workout_repository=workout_repository,
             max_tool_calls=max_tool_calls,
         ),
     )
     workflow.add_node("response", partial(response_node, llm_client=llm_client))
-    workflow.add_node(
-        "memory_update",
-        partial(memory_update_node, memory_service=memory),
-    )
+    workflow.add_node("memory_update", partial(memory_update_node, memory_service=memory))
     workflow.add_node(
         "conversation_persistence",
         partial(
@@ -119,18 +123,12 @@ def create_agent_graph(
     workflow.add_conditional_edges(
         "tool_decision",
         route_tool_decision,
-        {
-            "tool_execution": "tool_execution",
-            "response": "response",
-        },
+        {"tool_execution": "tool_execution", "response": "response"},
     )
     workflow.add_conditional_edges(
         "tool_execution",
         make_tool_execution_router(max_tool_rounds, max_tool_calls),
-        {
-            "tool_decision": "tool_decision",
-            "response": "response",
-        },
+        {"tool_decision": "tool_decision", "response": "response"},
     )
     workflow.add_edge("response", "memory_update")
     workflow.add_edge("memory_update", "conversation_persistence")
@@ -165,6 +163,9 @@ def _execute_tools_with_state_user_id(
     tool_registry: ToolRegistry,
     repository: object,
     weather_client: object,
+    geocoding_client: object,
+    time_provider: object | None,
+    workout_repository: object | None,
     max_tool_calls: int,
 ) -> object:
     return tool_execution_node(
@@ -175,6 +176,9 @@ def _execute_tools_with_state_user_id(
             "user_id": state.get("user_id", ""),
             "repository": repository,
             "weather_client": weather_client,
+            "geocoding_client": geocoding_client,
+            "time_provider": time_provider,
+            "workout_repository": workout_repository,
         },
         max_tool_calls=max_tool_calls,
     )
@@ -193,6 +197,7 @@ def get_agent_graph_with_repository(
         memory_service=MemoryService(SQLUserMemoryRepository(session)),
         conversation_repository=conversation_repository or SQLConversationRepository(session),
         training_repository=SQLTrainingRecordRepository(session),
+        workout_repository=SQLWorkoutCheckInRepository(session),
     )
 
 
@@ -205,7 +210,10 @@ def get_agent_graph() -> object:
 def _build_default_tool_registry() -> ToolRegistry:
     registry = build_training_tool_registry()
     register_weather_tool(registry, OpenMeteoWeatherClient())
+    register_geocoding_tool(registry, OpenMeteoGeocodingClient())
     register_recommendation_tool(registry)
+    register_time_tool(registry)
+    register_workout_tools(registry)
     return registry
 
 

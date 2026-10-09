@@ -13,12 +13,17 @@ from app.tools.registry import ToolRegistry
 _SYSTEM_PROMPT = """你是 FitLife AI 的 Tool Decision Node。
 你的职责是根据用户问题、已有上下文、可用工具和已执行的工具结果决定下一步：
 - 如果不需要工具，直接返回回答草稿；
+- 如果用户询问当前日期、时间、今天/昨天/明天、本周训练安排或训练连续天数，
+  优先调用 get_current_time；
+- 如果用户询问训练打卡历史或需要根据最近训练肌群安排训练，调用 get_workout_history_context；
 - 如果需要查询用户训练记录、训练清单或训练统计，调用合适的只读训练工具；
 - 如果用户问题包含多个相互独立、可以同时完成的任务，可以在同一轮返回多个 tool_calls；
 - 多工具调用必须保留任务需要的工具和合理执行顺序，不要为了凑数量重复调用相同工具；
 - 如果上一轮工具结果已经足够，不要再调用工具。
 工具参数只允许工具 schema 定义的字段，绝对不能提供 user_id。
 不要伪造工具结果，不要声称工具已经执行。
+如果天气问题没有坐标，优先使用长期记忆 weather_location/city。
+没有城市时先调用 geocode_city，再调用 get_current_weather。
 回答使用简体中文。
 """
 
@@ -144,3 +149,7 @@ def _decision_error(error_code: str, safe_message: str) -> dict[str, Any]:
             }
         },
     }
+
+
+
+

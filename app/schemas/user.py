@@ -20,6 +20,7 @@ class UserProfileCreate(BaseModel):
     training_frequency: int = Field(ge=0, le=14, description="Training sessions per week")
     diet_preference: str = Field(min_length=1, max_length=200)
     lifestyle: str = Field(min_length=1, max_length=500)
+    city: str = Field(default="", max_length=100)
 
 
 class UserProfileResponse(UserProfileCreate):
@@ -30,3 +31,11 @@ class UserProfileResponse(UserProfileCreate):
     id: int
     created_at: datetime
     updated_at: datetime
+
+
+class UserProfileUpdate(BaseModel):
+    """Partial profile update for user-controlled weather location."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    city: str = Field(max_length=100)

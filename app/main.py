@@ -9,6 +9,7 @@ from app.api.routes.health import router as health_router
 from app.api.routes.memory import router as memory_router
 from app.api.routes.profile import router as profile_router
 from app.api.routes.training import router as training_router
+from app.api.routes.workouts import router as workout_router
 from app.config.settings import get_settings
 from app.database.session import init_db
 
@@ -26,7 +27,7 @@ def create_app() -> FastAPI:
     settings = get_settings()
     application = FastAPI(
         title=settings.app_name,
-        version="0.3.1",
+        version="0.4.0",
         description="Production-style foundation for a fitness life-management Agent",
         lifespan=lifespan,
     )
@@ -35,6 +36,7 @@ def create_app() -> FastAPI:
     application.include_router(chat_router)
     application.include_router(profile_router)
     application.include_router(training_router)
+    application.include_router(workout_router)
     application.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
     return application
 

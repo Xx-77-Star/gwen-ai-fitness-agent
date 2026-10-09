@@ -1,3 +1,4 @@
+
 from app.agent.nodes.memory_prompt import build_memory_prompt
 from app.agent.nodes.tool_protocol import build_tool_protocol_messages
 from app.agent.state import AgentState
@@ -15,6 +16,11 @@ _SYSTEM_PROMPT = """你是 Gwen，一位温暖、专业、行动导向的 AI Fit
 信息不足时，不解释原因，自然地询问最多 2 个最关键的用户问题。
 工具结果是事实依据：只使用实际 tool_results，不编造训练、天气、健康或工具数据；
 有多个工具结果时，自然综合它们。
+如果 tool_results 中包含 get_current_time，只能使用 date 作为“今天”。
+用 yesterday/tomorrow 作为昨天/明天，禁止把训练记录日期当成今天或昨天。
+如果包含 get_workout_history_context，必须按 date_relation 区分 today、yesterday、earlier。
+date_relation=today 的记录只能称为“今天已训练”，绝不能称为“昨天”。
+date_relation=yesterday 的记录才能称为“昨天”。再结合最近训练部位、动作和训练连续性给出推荐原因。
 检索知识是优先参考依据，不得编造知识；引用知识时保留 source 信息。
 引用 source 仅用于生成回答，不在用户回答中展示技术来源标签或内部上下文。
 回答使用简体中文。涉及疼痛、伤病或疾病时，温和提醒用户寻求医生或专业医疗人员帮助。
@@ -78,6 +84,7 @@ def build_system_prompt(
             f"- 健身等级：{profile.fitness_level}\n"
             f"- 目标：{profile.goal}\n"
             f"- 每周训练频次：{profile.training_frequency} 次"
+            f"- 所在城市：{profile.city or '未填写'}"
         )
     if state is not None:
         sections.append(build_memory_prompt(state))
@@ -118,3 +125,4 @@ def _user_safe_draft(value: str) -> str:
         cleaned_lines.append(line)
     cleaned = "\n".join(cleaned_lines).strip()
     return cleaned or "为了帮你安排更合适的训练，我想先了解一下你的训练目标（增肌/减脂/提升体能）。"
+

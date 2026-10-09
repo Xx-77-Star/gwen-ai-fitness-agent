@@ -1,7 +1,9 @@
 from collections.abc import Iterator
+from contextlib import suppress
 from functools import lru_cache
 
-from sqlalchemy import Engine, create_engine
+from sqlalchemy import Engine, create_engine, inspect, text
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.config.settings import get_settings
@@ -30,7 +32,20 @@ def init_db() -> None:
     Phase 2.1 intentionally uses `create_all`; Alembic migrations can be added
     when the data model starts evolving across deployed environments.
     """
-    Base.metadata.create_all(bind=get_engine())
+    engine = get_engine()
+    Base.metadata.create_all(bind=engine)
+    if engine.dialect.name == "sqlite":
+        inspector = inspect(engine)
+        if "user_profiles" in inspector.get_table_names():
+            columns = {item["name"] for item in inspector.get_columns("user_profiles")}
+            if "city" not in columns:
+                with engine.begin() as connection, suppress(OperationalError):
+                    connection.execute(
+                        text(
+                            "ALTER TABLE user_profiles ADD COLUMN city "
+                            "VARCHAR(100) NOT NULL DEFAULT ''"
+                        )
+                    )
 
 
 def get_db() -> Iterator[Session]:

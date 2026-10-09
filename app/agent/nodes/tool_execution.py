@@ -63,6 +63,12 @@ def tool_execution_node(
 def _tool_runtime_dependency(tool_name: str | None, runtime: dict[str, Any]) -> Any:
     if tool_name == "get_current_weather":
         return runtime.get("weather_client")
+    if tool_name == "geocode_city":
+        return runtime.get("geocoding_client")
+    if tool_name == "get_current_time":
+        return runtime.get("time_provider")
+    if tool_name in {"list_workout_check_ins", "get_workout_history_context"}:
+        return runtime.get("workout_repository")
     return runtime.get("repository")
 
 

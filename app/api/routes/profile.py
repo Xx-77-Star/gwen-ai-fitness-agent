@@ -5,9 +5,9 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.database.models import UserProfile
+from app.database.models import UserMemory, UserProfile
 from app.database.session import get_db
-from app.schemas.user import UserProfileCreate, UserProfileResponse
+from app.schemas.user import UserProfileCreate, UserProfileResponse, UserProfileUpdate
 
 router = APIRouter(prefix="/profile", tags=["profile"])
 
@@ -33,6 +33,54 @@ def create_profile(payload: UserProfileCreate, db: DbSession) -> UserProfile:
             status_code=status.HTTP_409_CONFLICT,
             detail="A profile already exists for this user_id",
         ) from exc
+    return profile
+
+
+@router.patch("/{user_id}/city", response_model=UserProfileResponse)
+def update_profile_city(user_id: str, payload: UserProfileUpdate, db: DbSession) -> UserProfile:
+    """Save the user's self-reported city for weather-aware recommendations."""
+    profile = db.scalar(select(UserProfile).where(UserProfile.user_id == user_id))
+    if profile is None:
+        # Web users can set weather location before completing the optional
+        # training profile. Keep this lightweight and preserve the profile flow.
+        profile = UserProfile(
+            user_id=user_id,
+            nickname="Gwen User",
+            age=30,
+            gender="prefer_not_to_say",
+            height=170.0,
+            weight=65.0,
+            fitness_level="unknown",
+            goal="保持健康",
+            training_frequency=0,
+            diet_preference="均衡",
+            lifestyle="未填写",
+            city=payload.city.strip(),
+        )
+        db.add(profile)
+    else:
+        profile.city = payload.city.strip()
+        db.add(profile)
+    db.flush()
+    for memory_key in ("weather_location", "city"):
+        memory = db.scalar(
+            select(UserMemory).where(
+                UserMemory.user_id == user_id,
+                UserMemory.memory_key == memory_key,
+            )
+        )
+        if memory is None:
+            db.add(
+                UserMemory(
+                    user_id=user_id,
+                    memory_key=memory_key,
+                    memory_value=payload.city.strip(),
+                )
+            )
+        else:
+            memory.memory_value = payload.city.strip()
+            db.add(memory)
+    db.flush()
     return profile
 
 

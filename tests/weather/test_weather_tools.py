@@ -28,7 +28,11 @@ def test_weather_schema_and_registry_expose_external_tool() -> None:
     assert definition is not None
     assert definition.input_model is WeatherInput
     assert payloads[0]["function"]["name"] == "get_current_weather"
-    assert set(payloads[0]["function"]["parameters"]["properties"]) == {"latitude", "longitude"}
+    assert set(payloads[0]["function"]["parameters"]["properties"]) == {
+        "latitude",
+        "longitude",
+        "city",
+    }
 
 
 def test_weather_tool_calls_external_client_and_validates_coordinates() -> None:

@@ -5,7 +5,13 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-MemoryKey = Literal["fitness_goal", "training_preference", "experience_level"]
+MemoryKey = Literal[
+    "fitness_goal",
+    "training_preference",
+    "experience_level",
+    "weather_location",
+    "city",
+]
 
 
 class MemoryItemResponse(BaseModel):

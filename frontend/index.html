@@ -6,7 +6,7 @@
     <meta name="description" content="Gwen - 你的 AI Fitness Companion，陪你制定训练计划、记录训练状态，一起完成目标。">
     <title>Gwen | AI Fitness Companion</title>
     <link rel="icon" type="image/webp" href="/assets/ai-coach.webp">
-    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/styles.css?v=20261009">
     <link rel="stylesheet" href="/avatar/hero-avatar.css">
     <script type="importmap">
       {
@@ -32,6 +32,7 @@
         <div class="header-actions">
           <button class="trace-drawer-button" id="open-trace" type="button">Agent Trace</button>
           <button class="icon-button" id="new-chat" type="button">新对话</button>
+          <button class="icon-button workout-entry" id="open-workout-checkin" type="button" onclick="const panel=document.querySelector(`#workout-backdrop`); if(panel){panel.hidden=false;}">训练打卡</button>
           <button class="icon-button memory-entry" id="open-memory-center" type="button">🧠 Gwen 记忆管理</button>
         </div>
       </header>
@@ -99,6 +100,11 @@
               <div><strong>Gwen</strong><span>AI Fitness Companion</span></div>
             </div>
             <p>告诉我你今天的状态、目标或正在权衡的问题。我会先理解你，再给出可执行的下一步。</p>
+            <div class="city-setting">
+              <label for="user-city">所在地</label>
+              <div><input id="user-city" type="text" maxlength="100" placeholder="例如：广州"><button class="quiet-button" id="save-user-city" type="button">一键保存/修改所在地</button></div>
+              <p id="city-status" class="city-status" role="status"></p>
+            </div>
             <div class="quick-prompts">
               <span>START WITH A FOCUS</span>
               <button class="goal-card" type="button" data-goal="增肌塑形"><strong>增肌塑形</strong><small>力量与恢复</small></button>
@@ -146,6 +152,31 @@
         </div>
     </main>
 
+    <div class="workout-backdrop" id="workout-backdrop" hidden>
+      <section class="workout-modal" role="dialog" aria-modal="true" aria-labelledby="workout-modal-title">
+        <header class="workout-modal-head">
+          <div><p class="section-label">WORKOUT CHECK-IN</p><h2 id="workout-modal-title">训练打卡</h2></div>
+          <button class="icon-button" id="close-workout-checkin" type="button" aria-label="关闭训练打卡">关闭</button>
+        </header>
+        <p class="workout-modal-intro">记录今天完成的训练，Gwen 会把它加入训练历史，用于后续训练推荐。</p>
+        <form class="workout-form" id="workout-form">
+          <label>日期<input id="workout-date" name="date" type="date" required></label>
+          <label>训练部位<select id="workout-muscle-group" name="muscle_group" required><option value="胸">胸</option><option value="背">背</option><option value="腿">腿</option><option value="肩">肩</option><option value="手臂">手臂</option><option value="核心">核心</option></select></label>
+          <label>动作名称<input id="workout-exercise" name="exercise" type="text" maxlength="100" placeholder="例如：卧推" required></label>
+          <label>训练重量（kg）<input id="workout-weight" name="weight" type="number" min="0" max="1000" step="0.5" required></label>
+          <label>组数<input id="workout-sets" name="sets" type="number" min="1" max="100" required></label>
+          <label>次数<input id="workout-reps" name="reps" type="number" min="1" max="1000" required></label>
+          <label>训练感受<input id="workout-feeling" name="feeling" type="text" maxlength="100" placeholder="例如：状态良好" required></label>
+          <label class="workout-note">备注<textarea id="workout-note" name="note" maxlength="1000" rows="3" placeholder="可选"></textarea></label>
+          <div class="workout-actions"><p id="workout-status" class="workout-status" role="status"></p><button class="primary-button" id="save-workout" type="submit">保存训练打卡</button></div>
+        </form>
+        <section class="workout-history" aria-labelledby="workout-history-title">
+          <div class="workout-history-head"><h3 id="workout-history-title">历史训练记录</h3><span id="workout-history-count">暂无记录</span></div>
+          <div class="workout-history-list" id="workout-history-list"><p class="empty-copy">保存后会显示最近训练记录。</p></div>
+        </section>
+      </section>
+    </div>
+
     <div class="memory-backdrop" id="memory-backdrop" hidden>
       <section class="memory-modal" role="dialog" aria-modal="true" aria-labelledby="memory-modal-title">
         <header class="memory-modal-head">
@@ -155,7 +186,7 @@
           </div>
           <button class="icon-button" id="close-memory-center" type="button" aria-label="关闭 Gwen 记忆管理">关闭</button>
         </header>
-        <p class="memory-modal-intro">Gwen 会根据这些信息为你提供个性化训练建议，你可以随时查看、修改或重新开始。</p>
+        <p class="memory-modal-intro">Gwen 会根据这些信息为你提供个性化训练建议，包括你保存的天气城市。你可以随时查看、修改或重新开始。</p>
         <h3 class="memory-section-title">Gwen 记住了关于你的：</h3>
         <div class="memory-summary" id="memory-summary">
           <strong data-memory-count>Gwen 记住了关于你的 0 条长期记忆</strong>
@@ -196,8 +227,9 @@
       </div>
     </aside>
     <div class="drawer-backdrop" id="drawer-backdrop" hidden></div>
-    <script src="/app.js" type="module"></script>
+    <script src="/app.js?v=20261009" type="module"></script>
   </body>
 </html>
+
 
 
