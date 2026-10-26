@@ -10,6 +10,7 @@ from app.database.models import Base
 from app.database.session import get_db
 from app.llm.errors import LLMError
 from app.main import app
+from app.memory.conversation_repository import SQLConversationRepository
 from tests.fakes import FakeLLMClient, FakeProfileRepository
 
 
@@ -55,6 +56,31 @@ def client(
         yield AsyncClient(transport=transport, base_url="http://test")
     finally:
         app.dependency_overrides.clear()
+
+
+@pytest.mark.asyncio
+async def test_history_restores_full_transcript_and_isolates_user_and_conversation(
+    client: AsyncClient, session_factory: sessionmaker[Session],
+) -> None:
+    with session_factory() as session:
+        repo = SQLConversationRepository(session)
+        # More turns than the Agent context window: the UI must restore them all.
+        for index in range(40):
+            repo.append_turn("saved-chat", "owner", "user" if index % 2 == 0 else "assistant",
+                             f"message-{index}")
+        repo.append_turn("other-chat", "owner", "user", "different conversation")
+        session.commit()
+
+    response = await client.get("/chat/saved-chat/history", params={"user_id": "owner"})
+    assert response.status_code == 200
+    messages = response.json()["messages"]
+    assert [item["content"] for item in messages] == [f"message-{index}" for index in range(40)]
+    assert [item["role"] for item in messages[:2]] == ["user", "assistant"]
+    for conversation, user in [("saved-chat", "someone-else"), ("missing", "owner")]:
+        response = await client.get(f"/chat/{conversation}/history", params={"user_id": user})
+        assert response.status_code == 200
+        assert response.json()["messages"] == []
+    assert (await client.get("/chat/saved-chat/history")).status_code == 422
 
 
 @pytest.mark.asyncio

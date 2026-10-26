@@ -51,6 +51,18 @@ class SQLConversationRepository:
     def __init__(self, session: Session) -> None:
         self._session = session
 
+    def list_turns(self, conversation_id: str, user_id: str) -> list[ConversationTurnRecord]:
+        """Read the full transcript, independently of the Agent's context window."""
+        rows = self._session.scalars(
+            select(ConversationTurn)
+            .where(
+                ConversationTurn.conversation_id == conversation_id,
+                ConversationTurn.user_id == user_id,
+            )
+            .order_by(ConversationTurn.sequence, ConversationTurn.id)
+        ).all()
+        return [ConversationTurnRecord.model_validate(row) for row in rows]
+
     def create_conversation(
         self,
         user_id: str,

@@ -537,6 +537,39 @@ let conversationId = sessionStorage.getItem("fitlife-conversation-id");
 let userId = localStorage.getItem("fitlife-user-id");
 if (!userId) { userId = `web-${crypto.randomUUID()}`; localStorage.setItem("fitlife-user-id", userId); }
 loadUserCity();
+restoreConversation();
+
+async function restoreConversation() {
+  if (!conversationId) return;
+  sendButton.disabled = true;
+  newChatButton.disabled = true;
+  if (connectionState) connectionState.textContent = "正在恢复聊天记录…";
+  try {
+    const response = await fetch(`/chat/${encodeURIComponent(conversationId)}/history?user_id=${encodeURIComponent(userId)}`);
+    const payload = await parseJsonResponse(response);
+    if (!response.ok) throw new Error("聊天记录读取失败");
+    if (!Array.isArray(payload.messages)) throw new Error("聊天记录格式异常");
+    emptyState.hidden = payload.messages.length > 0;
+    payload.messages.forEach(({role, content}) => appendMessage(role, content));
+    if (connectionState) connectionState.textContent = "Gwen 就绪";
+    sendButton.disabled = false;
+  } catch {
+    emptyState.hidden = true;
+    const notice = document.createElement("div");
+    notice.className = "message error";
+    notice.textContent = "暂时无法恢复聊天记录，已保存的记录不会被清除。";
+    const retry = document.createElement("button");
+    retry.type = "button";
+    retry.className = "quiet-button";
+    retry.textContent = "重新加载";
+    retry.addEventListener("click", () => { notice.remove(); restoreConversation(); });
+    notice.append(retry);
+    messageList.append(notice);
+    if (connectionState) connectionState.textContent = "聊天记录加载失败，请重试";
+  } finally {
+    newChatButton.disabled = false;
+  }
+}
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -546,6 +579,8 @@ form.addEventListener("submit", async (event) => {
   // The client picks the run id so it can subscribe to node lifecycle events
   // before the request starts - no fixed timers, real workflow stage feedback.
   const runConversationId = conversationId || crypto.randomUUID();
+  conversationId = runConversationId;
+  sessionStorage.setItem("fitlife-conversation-id", conversationId);
   openAgentStatusStream(runConversationId);
   try {
     const response = await fetch("/chat", {method: "POST", headers: {"Content-Type": "application/json"},
@@ -560,9 +595,11 @@ form.addEventListener("submit", async (event) => {
 });
 
 newChatButton.addEventListener("click", () => {
+  if (newChatButton.disabled) return;
   closeAgentStatusStream();
   hideAgentStatus();
   conversationId = null; sessionStorage.removeItem("fitlife-conversation-id");
+  sendButton.disabled = false;
   messageList.querySelectorAll(".message").forEach((node) => node.remove()); emptyState.hidden = false;
   renderTrace({}); if (traceRun) traceRun.textContent = "等待请求";
   if (connectionState) connectionState.textContent = "Gwen 就绪"; input.focus();
@@ -575,6 +612,7 @@ function setBusy(busy) {
   chatAvatar?.setBusy(busy);
   setChatCompanionStatus(busy);
   sendButton.disabled = busy; sendButton.textContent = busy ? "生成中" : "发送";
+  newChatButton.disabled = busy;
   updateLoadingOverlay();
   if (connectionState) if (connectionState) connectionState.textContent = busy ? "处理中" : connectionState.textContent;
 }

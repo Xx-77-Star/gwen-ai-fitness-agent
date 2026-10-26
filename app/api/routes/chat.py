@@ -3,7 +3,7 @@ from collections.abc import Mapping, Sequence
 from typing import Annotated
 from uuid import uuid4
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
@@ -19,11 +19,29 @@ from app.observability.tracing import (
     AgentRunTrace,
     LoggingAgentTraceSink,
 )
-from app.schemas.chat import ChatRequest, ChatResponse
+from app.schemas.chat import ChatHistoryMessage, ChatHistoryResponse, ChatRequest, ChatResponse
 
 router = APIRouter(prefix="/chat", tags=["chat"])
 
 DbSession = Annotated[Session, Depends(get_db)]
+
+
+@router.get("/{conversation_id}/history", response_model=ChatHistoryResponse)
+def chat_history(
+    conversation_id: str,
+    user_id: Annotated[str, Query(min_length=1, max_length=64, pattern=r"^[A-Za-z0-9_-]+$")],
+    db: DbSession,
+) -> ChatHistoryResponse:
+    """Restore saved messages for this user and conversation without invoking the Agent."""
+    turns = SQLConversationRepository(db).list_turns(conversation_id, user_id)
+    return ChatHistoryResponse(
+        conversation_id=conversation_id,
+        messages=[
+            ChatHistoryMessage(role=turn.role, content=turn.content)
+            for turn in turns
+            if turn.role in {"user", "assistant"}
+        ],
+    )
 
 _NODE_DISPLAY = {
     "load_profile": ("读取用户画像", "profile"),

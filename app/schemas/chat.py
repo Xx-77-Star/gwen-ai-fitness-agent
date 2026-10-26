@@ -22,3 +22,13 @@ class ChatResponse(BaseModel):
     response: str
     conversation_id: str
     trace: dict[str, Any] = Field(default_factory=dict)
+
+
+class ChatHistoryMessage(BaseModel):
+    role: str
+    content: str
+
+
+class ChatHistoryResponse(BaseModel):
+    conversation_id: str
+    messages: list[ChatHistoryMessage]
